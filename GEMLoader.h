@@ -213,21 +213,21 @@ namespace GEMLoader
 		{
 			unsigned int n = 0;
 			file.read(reinterpret_cast<char*>(&n), sizeof(unsigned int));
-			for (int i = 0; i < n; i++)
+			for (unsigned int i = 0; i < n; i++)
 			{
 				mesh.material.properties.push_back(loadProperty(file));
 			}
 			if (isAnimated == 0)
 			{
 				file.read(reinterpret_cast<char*>(&n), sizeof(unsigned int));
-				for (int i = 0; i < n; i++)
+				for (unsigned int i = 0; i < n; i++)
 				{
 					GEMStaticVertex v;
 					file.read(reinterpret_cast<char*>(&v), sizeof(GEMStaticVertex));
 					mesh.verticesStatic.push_back(v);
 				}
 				file.read(reinterpret_cast<char*>(&n), sizeof(unsigned int));
-				for (int i = 0; i < n; i++)
+				for (unsigned int i = 0; i < n; i++)
 				{
 					unsigned int index = 0;
 					file.read(reinterpret_cast<char*>(&index), sizeof(unsigned int));
@@ -236,14 +236,14 @@ namespace GEMLoader
 			} else
 			{
 				file.read(reinterpret_cast<char*>(&n), sizeof(unsigned int));
-				for (int i = 0; i < n; i++)
+				for (unsigned int i = 0; i < n; i++)
 				{
 					GEMAnimatedVertex v;
 					file.read(reinterpret_cast<char*>(&v), sizeof(GEMAnimatedVertex));
 					mesh.verticesAnimated.push_back(v);
 				}
 				file.read(reinterpret_cast<char*>(&n), sizeof(unsigned int));
-				for (int i = 0; i < n; i++)
+				for (unsigned int i = 0; i < n; i++)
 				{
 					unsigned int index = 0;
 					file.read(reinterpret_cast<char*>(&index), sizeof(unsigned int));
