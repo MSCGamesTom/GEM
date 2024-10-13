@@ -31,12 +31,6 @@ This user guide will walk you through the installation process, provide an overv
 
 - **Operating System**: Windows (due to the use of Windows-specific DLLs)
 - **Python Version**: Python 3.x
-- **Libraries and Dependencies**:
-  - `ctypes`
-  - `tkinter`
-  - `os`
-  - `shutil`
-  - `codecs`
 - **Additional Files**:
   - `assimp-vc143-mt.dll` (Assimp library DLL)
   - `ModelExporter.dll` (Custom exporter DLL)
@@ -49,16 +43,11 @@ Ensure that the DLL files (`assimp-vc143-mt.dll` and `ModelExporter.dll`) are lo
 
 1. **Install Python 3.x**: If not already installed, download and install Python 3.x from the [official website](https://www.python.org/downloads/).
 
-2. **Install Required Libraries**: Most required libraries are standard with Python. If any are missing, you can install them using `pip`:
-   ```bash
-   pip install tkinter
-   ```
-
-3. **Prepare DLL Files**:
+2. **Prepare DLL Files**:
    - Place `assimp-vc143-mt.dll` and `ModelExporter.dll` in the same directory as the Python script.
    - Alternatively, you can place them in a directory that's added to the DLL search path within the script.
 
-4. **Set Up Directory Structure**:
+3. **Set Up Directory Structure**:
    - Create a `Models` directory where exported models will be saved.
    - Create a `Textures` directory where texture files will be stored.
 
