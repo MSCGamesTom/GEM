@@ -1,4 +1,5 @@
 # GEM
+
 GEM: A minimal file format for geometry and skeletal animated data.
 
 ## Overview
@@ -7,142 +8,193 @@ The GEM file loader provides classes and methods for loading 3D models and anima
 
 These are packaged in the GEMLoader namespace.
 
-## Classes and Structures
+## Overview
+
+- **GEMLoader**: Main namespace containing all classes related to loading GEM Model Files.
+- **GEMModelLoader**: Core class responsible for parsing model files and loading meshes and animations.
+- **Mesh and Vertex Classes**: Represent the geometric data of models.
+- **Animation Classes**: Represent skeletal animation data.
+
+## Table of Contents
+
+1. [Classes](#classes)
+   - [GEMMaterialProperty](#gemmaterialproperty)
+   - [GEMMaterial](#gemmaterial)
+   - [GEMVec3](#gemvec3)
+   - [GEMStaticVertex](#gemstaticvertex)
+   - [GEMAnimatedVertex](#gemanimatedvertex)
+   - [GEMMesh](#gemmesh)
+   - [GEMMatrix](#gemmatrix)
+   - [GEMQuaternion](#gemquaternion)
+   - [GEMBone](#gembone)
+   - [GEMAnimationFrame](#gemanimationframe)
+   - [GEMAnimationSequence](#gemanimationsequence)
+   - [GEMAnimation](#gemanimation)
+   - [GEMModelLoader](#gemmodelloader)
+2. [Usage](#usage)
+
+## Classes
+
+### GEMMaterialProperty
+
+Represents a single property of a material.
+
+**Members:**
+
+- `std::string name`: Name of the material property.
+- `std::string value`: Value of the material property.
+
+**Constructors:**
+
+- `GEMMaterialProperty()`: Default constructor.
+- `GEMMaterialProperty(std::string initialName)`: Initializes the property with a name.
+
+**Methods:**
+
+- `std::string getValue(std::string _default = "")`: Returns the value as a string or `_default` if empty.
+- `float getValue(float _default)`: Converts the value to a `float` or returns `_default` on failure.
+- `int getValue(int _default)`: Converts the value to an `int` or returns `_default` on failure.
+- `unsigned int getValue(unsigned int _default)`: Converts the value to an `unsigned int` or returns `_default` on failure.
+- `void getValuesAsArray(std::vector<float>& values, char separator = ' ', float _default = 0)`: Splits the value string by `separator` and converts each segment to a `float`, adding them to `values`. Uses `_default` on conversion failure.
 
 ### GEMMaterial
 
-Represents the material properties of a mesh, including texture file paths.
+Represents a material composed of multiple properties.
 
-- **Members:**
-  - `std::string diffuse`: Path to the diffuse (albedo) texture map.
-  - `std::string normals`: Path to the normal map texture.
-  - `std::string metallic`: Path to the metallic texture map.
-  - `std::string roughness`: Path to the roughness texture map.
+**Members:**
+
+- `std::vector<GEMMaterialProperty> properties`: List of material properties.
+
+**Methods:**
+
+- `GEMMaterialProperty find(std::string name)`: Searches for a property by name. Returns a default `GEMMaterialProperty` with the given name if not found.
 
 ### GEMVec3
 
-A simple 3D vector class representing positions, normals, and scales.
+Simple 3D vector class.
 
-- **Members:**
-  - `float x`: X-component of the vector.
-  - `float y`: Y-component of the vector.
-  - `float z`: Z-component of the vector.
+**Members:**
+
+- `float x`: X-coordinate.
+- `float y`: Y-coordinate.
+- `float z`: Z-coordinate.
 
 ### GEMStaticVertex
 
-Represents a vertex in a static (non-animated) mesh.
+Represents a vertex in a static mesh.
 
-- **Members:**
-  - `GEMVec3 position`: The position of the vertex.
-  - `GEMVec3 normal`: The normal at the vertex.
-  - `GEMVec3 tangent`: The tangent vector at the vertex.
-  - `float u`: Texture coordinate U.
-  - `float v`: Texture coordinate V.
+**Members:**
+
+- `GEMVec3 position`: Vertex position.
+- `GEMVec3 normal`: Vertex normal.
+- `GEMVec3 tangent`: Vertex tangent.
+- `float u`: Texture coordinate U.
+- `float v`: Texture coordinate V.
 
 ### GEMAnimatedVertex
 
-Represents a vertex in an animated mesh, including bone influences.
+Represents a vertex in an animated mesh, including bone data.
 
-- **Members:**
-  - `GEMVec3 position`: The position of the vertex.
-  - `GEMVec3 normal`: The normal at the vertex.
-  - `GEMVec3 tangent`: The tangent vector at the vertex.
-  - `float u`: Texture coordinate U.
-  - `float v`: Texture coordinate V.
-  - `unsigned int bonesIDs[4]`: IDs of up to four bones influencing the vertex.
-  - `float boneWeights[4]`: Weights of the bone influences.
+**Members:**
+
+- `GEMVec3 position`: Vertex position.
+- `GEMVec3 normal`: Vertex normal.
+- `GEMVec3 tangent`: Vertex tangent.
+- `float u`: Texture coordinate U.
+- `float v`: Texture coordinate V.
+- `unsigned int bonesIDs[4]`: IDs of influencing bones.
+- `float boneWeights[4]`: Weights of the influencing bones.
 
 ### GEMMesh
 
-Represents a mesh within the model, which can be either static or animated.
+Represents a mesh, which can be either static or animated.
 
-- **Members:**
-  - `GEMMaterial material`: The material properties of the mesh.
-  - `std::vector<GEMStaticVertex> verticesStatic`: List of static vertices.
-  - `std::vector<GEMAnimatedVertex> verticesAnimated`: List of animated vertices.
-  - `std::vector<unsigned int> indices`: Indices for indexed drawing.
+**Members:**
 
-- **Methods:**
-  - `bool isAnimated()`: Returns `true` if the mesh contains animated vertices.
+- `GEMMaterial material`: Material applied to the mesh.
+- `std::vector<GEMStaticVertex> verticesStatic`: Static vertices.
+- `std::vector<GEMAnimatedVertex> verticesAnimated`: Animated vertices.
+- `std::vector<unsigned int> indices`: Index buffer.
+
+**Methods:**
+
+- `bool isAnimated()`: Returns `true` if the mesh is animated.
 
 ### GEMMatrix
 
-Represents a 4x4 transformation matrix used for bone transformations and global transformations.
+Represents a 4x4 transformation matrix.
 
-- **Members:**
-  - `float m[16]`: Elements of the matrix in row-major order.
+**Members:**
+
+- `float m[16]`: Matrix elements in column-major order.
 
 ### GEMQuaternion
 
-Represents a quaternion for rotations in animations.
+Represents a quaternion for rotation.
 
-- **Members:**
-  - `float q[4]`: Components of the quaternion.
+**Members:**
+
+- `float q[4]`: Quaternion components (x, y, z, w).
 
 ### GEMBone
 
-Represents a bone in the skeletal hierarchy.
+Represents a bone in a skeletal hierarchy.
 
-- **Members:**
-  - `std::string name`: Name of the bone.
-  - `GEMMatrix offset`: Offset matrix for transforming the bone.
-  - `int parentIndex`: Index of the parent bone (-1 if root bone).
+**Members:**
+
+- `std::string name`: Bone name.
+- `GEMMatrix offset`: Offset matrix.
+- `int parentIndex`: Index of the parent bone.
 
 ### GEMAnimationFrame
 
 Represents a single frame in an animation sequence.
 
-- **Members:**
-  - `std::vector<GEMVec3> positions`: Positions of bones at this frame.
-  - `std::vector<GEMQuaternion> rotations`: Rotations of bones at this frame.
-  - `std::vector<GEMVec3> scales`: Scales of bones at this frame.
+**Members:**
+
+- `std::vector<GEMVec3> positions`: Positions of bones at this frame.
+- `std::vector<GEMQuaternion> rotations`: Rotations of bones at this frame.
+- `std::vector<GEMVec3> scales`: Scales of bones at this frame.
 
 ### GEMAnimationSequence
 
-Represents an animation sequence containing multiple frames.
+Represents a sequence of animation frames.
 
-- **Members:**
-  - `std::string name`: Name of the animation sequence.
-  - `std::vector<GEMAnimationFrame> frames`: List of frames in the sequence.
-  - `float ticksPerSecond`: Playback speed of the animation.
+**Members:**
+
+- `std::string name`: Animation sequence name.
+- `std::vector<GEMAnimationFrame> frames`: List of frames.
+- `float ticksPerSecond`: Animation playback speed.
 
 ### GEMAnimation
 
-Contains all skeletal animation data for an animated model.
+Contains animation data for a model.
 
-- **Members:**
-  - `std::vector<GEMBone> bones`: List of bones in the skeleton.
-  - `std::vector<GEMAnimationSequence> animations`: List of animation sequences.
-  - `GEMMatrix globalInverse`: Global inverse transformation matrix.
+**Members:**
+
+- `std::vector<GEMBone> bones`: List of bones.
+- `std::vector<GEMAnimationSequence> animations`: List of animation sequences.
+- `GEMMatrix globalInverse`: Global inverse transformation matrix.
 
 ### GEMModelLoader
 
-Responsible for loading models and animations from GEM files.
+Class responsible for loading GEM Model Files.
 
-#### Public Methods
+**Public Methods:**
 
-- `int isAnimatedModel(std::string filename)`: Checks if a model file contains animation data.
+- `int isAnimatedModel(std::string filename)`: Checks if the model is animated. Returns `1` if animated, `0` otherwise.
+- `void load(std::string filename, std::vector<GEMMesh>& meshes)`: Loads meshes as a static model. Note animated geometry will be loaded, but the associated animation will not be loaded.
+- `void load(std::string filename, std::vector<GEMMesh>& meshes, GEMAnimation& animation)`: Loads meshes and animation data from an animated model file.
 
-- `void load(std::string filename, std::vector<GEMMesh>& meshes)`: Loads a static model.
+**Private Methods:**
 
-- `void load(std::string filename, std::vector<GEMMesh>& meshes, GEMAnimation& animation)`: Loads an animated model along with its animations.
-
-#### Private Methods
-
-- `void parseMaterialDesc(std::ifstream& file)`: Parses the material description section of the file.
-
-- `void loadMesh(std::ifstream& file, GEMMesh& mesh, int isAnimated)`: Loads a mesh from the file.
-
+- `GEMMaterialProperty loadProperty(std::ifstream& file)`: Reads a material property from the file.
+- `void loadMesh(std::ifstream& file, GEMMesh& mesh, int isAnimated)`: Loads a mesh (static or animated) from the file.
 - `static std::string loadS(std::ifstream& file)`: Reads a string from the file.
-
 - `GEMVec3 loadV(std::ifstream& file)`: Reads a `GEMVec3` from the file.
-
 - `GEMMatrix loadM(std::ifstream& file)`: Reads a `GEMMatrix` from the file.
-
 - `GEMQuaternion loadQ(std::ifstream& file)`: Reads a `GEMQuaternion` from the file.
-
 - `void loadFrame(GEMAnimationSequence& aseq, std::ifstream& file, int bonesN)`: Loads a single animation frame.
-
 - `void loadFrames(GEMAnimationSequence& aseq, std::ifstream& file, int bonesN, int frames)`: Loads multiple animation frames.
 
 ## Usage Examples

@@ -28,17 +28,91 @@ SOFTWARE.
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 namespace GEMLoader
 {
 
+	class GEMMaterialProperty
+	{
+	public:
+		std::string name;
+		std::string value;
+		GEMMaterialProperty() = default;
+		GEMMaterialProperty(std::string initialName)
+		{
+			name = initialName;
+		}
+		std::string getValue(std::string _default = "")
+		{
+			return value;
+		}
+		float getValue(float _default)
+		{
+			float v;
+			try
+			{
+				v = std::stof(value);
+			}
+			catch (...)
+			{
+				v = _default;
+			}
+			return v;
+		}
+		int getValue(int _default)
+		{
+			int v;
+			try
+			{
+				v = std::stoi(value);
+			}
+			catch (...)
+			{
+				v = _default;
+			}
+			return v;
+		}
+		unsigned int getValue(unsigned int _default)
+		{
+			int v = getValue(static_cast<int>(_default));
+			return static_cast<unsigned int>(v);
+		}
+		void getValuesAsArray(std::vector<float>& values, char seperator = ' ', float _default = 0)
+		{
+			std::stringstream ss(value);
+			std::string word;
+			while (std::getline(ss, word, seperator))
+			{
+				float v;
+				try
+				{
+					v = std::stof(value);
+				}
+				catch (...)
+				{
+					v = _default;
+				}
+				values.push_back(v);
+			}
+		}
+	};
+
 	class GEMMaterial
 	{
 	public:
-		std::string diffuse;
-		std::string normals;
-		std::string metallic;
-		std::string roughness;
+		std::vector<GEMMaterialProperty> properties;
+		GEMMaterialProperty find(std::string name)
+		{
+			for (int i = 0; i < properties.size(); i++)
+			{
+				if (properties[i].name == name)
+				{
+					return properties[i];
+				}
+			}
+			return GEMMaterialProperty(name);
+		}
 	};
 
 	class GEMVec3
@@ -128,23 +202,21 @@ namespace GEMLoader
 	class GEMModelLoader
 	{
 	private:
-		void parseMaterialDesc(std::ifstream& file)
+		GEMMaterialProperty loadProperty(std::ifstream& file)
 		{
-			int n = 0;
-			file.read(reinterpret_cast<char*>(&n), sizeof(int));
-			for (int i = 0; i < n; i++)
-			{
-				int v = 0;
-				file.read(reinterpret_cast<char*>(&v), sizeof(int));
-			}
+			GEMMaterialProperty prop;
+			prop.name = loadS(file);
+			prop.value = loadS(file);
+			return prop;
 		}
 		void loadMesh(std::ifstream& file, GEMMesh& mesh, int isAnimated)
 		{
-			int n = 0;
-			mesh.material.diffuse = loadS(file);
-			mesh.material.normals = loadS(file);
-			mesh.material.metallic = loadS(file);
-			mesh.material.roughness = loadS(file);
+			unsigned int n = 0;
+			file.read(reinterpret_cast<char*>(&n), sizeof(unsigned int));
+			for (int i = 0; i < n; i++)
+			{
+				mesh.material.properties.push_back(loadProperty(file));
+			}
 			if (isAnimated == 0)
 			{
 				file.read(reinterpret_cast<char*>(&n), sizeof(unsigned int));
@@ -264,11 +336,11 @@ namespace GEMLoader
 				file.close();
 				exit(0);
 			}
-			parseMaterialDesc(file);
+			//parseMaterialDesc(file);
 			unsigned int isAnimated = 0;
 			file.read(reinterpret_cast<char*>(&isAnimated), sizeof(unsigned int));
 			file.read(reinterpret_cast<char*>(&n), sizeof(unsigned int));
-			for (int i = 0; i < n; i++)
+			for (unsigned int i = 0; i < n; i++)
 			{
 				GEMMesh mesh;
 				loadMesh(file, mesh, isAnimated);
@@ -283,23 +355,23 @@ namespace GEMLoader
 			file.read(reinterpret_cast<char*>(&n), sizeof(unsigned int));
 			if (n != 4058972161)
 			{
-				printf("%s is not a GE Model File", filename);
+				std::cout << filename << " is not a GE Model File" << std::endl;
 				exit(0);
 			}
-			parseMaterialDesc(file);
+			//parseMaterialDesc(file);
 			unsigned int isAnimated = 0;
 			file.read(reinterpret_cast<char*>(&isAnimated), sizeof(unsigned int));
 			file.read(reinterpret_cast<char*>(&n), sizeof(unsigned int));
-			for (int i = 0; i < n; i++)
+			for (unsigned int i = 0; i < n; i++)
 			{
 				GEMMesh mesh;
 				loadMesh(file, mesh, isAnimated);
 				meshes.push_back(mesh);
 			}
 			// Read skeleton
-			int bonesN = 0;
+			unsigned int bonesN = 0;
 			file.read(reinterpret_cast<char*>(&bonesN), sizeof(unsigned int));
-			for (int i = 0; i < bonesN; i++)
+			for (unsigned int i = 0; i < bonesN; i++)
 			{
 				GEMBone bone;
 				bone.name = loadS(file);
@@ -310,7 +382,7 @@ namespace GEMLoader
 			animation.globalInverse = loadM(file);
 			// Read animation sequence
 			file.read(reinterpret_cast<char*>(&n), sizeof(unsigned int));
-			for (int i = 0; i < n; i++)
+			for (unsigned int i = 0; i < n; i++)
 			{
 				GEMAnimationSequence aseq;
 				aseq.name = loadS(file);
