@@ -309,7 +309,7 @@ namespace GEMLoader
 			}
 		}
 	public:
-		int isAnimatedModel(std::string filename)
+		bool isAnimatedModel(std::string filename)
 		{
 			std::ifstream file(filename, ::std::ios::binary);
 			unsigned int n = 0;
@@ -336,7 +336,6 @@ namespace GEMLoader
 				file.close();
 				exit(0);
 			}
-			//parseMaterialDesc(file);
 			unsigned int isAnimated = 0;
 			file.read(reinterpret_cast<char*>(&isAnimated), sizeof(unsigned int));
 			file.read(reinterpret_cast<char*>(&n), sizeof(unsigned int));
@@ -358,7 +357,6 @@ namespace GEMLoader
 				std::cout << filename << " is not a GE Model File" << std::endl;
 				exit(0);
 			}
-			//parseMaterialDesc(file);
 			unsigned int isAnimated = 0;
 			file.read(reinterpret_cast<char*>(&isAnimated), sizeof(unsigned int));
 			file.read(reinterpret_cast<char*>(&n), sizeof(unsigned int));

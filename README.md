@@ -31,7 +31,7 @@ These are packaged in the GEMLoader namespace.
    - [GEMAnimationSequence](#gemanimationsequence)
    - [GEMAnimation](#gemanimation)
    - [GEMModelLoader](#gemmodelloader)
-2. [Usage](#usage)
+2. [Usage](#usage-examples)
 
 ## Classes
 
@@ -126,7 +126,7 @@ Represents a 4x4 transformation matrix.
 
 **Members:**
 
-- `float m[16]`: Matrix elements in column-major order.
+- `float m[16]`: Matrix elements.
 
 ### GEMQuaternion
 
@@ -182,7 +182,7 @@ Class responsible for loading GEM Model Files.
 
 **Public Methods:**
 
-- `int isAnimatedModel(std::string filename)`: Checks if the model is animated. Returns `1` if animated, `0` otherwise.
+- `bool isAnimatedModel(std::string filename)`: Checks if the model is animated. Returns `True` if animated, `False` otherwise.
 - `void load(std::string filename, std::vector<GEMMesh>& meshes)`: Loads meshes as a static model. Note animated geometry will be loaded, but the associated animation will not be loaded.
 - `void load(std::string filename, std::vector<GEMMesh>& meshes, GEMAnimation& animation)`: Loads meshes and animation data from an animated model file.
 
@@ -275,4 +275,4 @@ int main() {
 
 ## License
 
-This code is provided under the MIT License:
+This code is provided under the MIT License.
