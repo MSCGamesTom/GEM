@@ -13,11 +13,7 @@ This user guide will walk you through the installation process, provide an overv
 1. [System Requirements](#system-requirements)
 2. [Installation](#installation)
 3. [Launching the Application](#launching-the-application)
-4. [User Interface Overview](#user-interface-overview)
-   - [Main Window](#main-window)
-   - [Buttons and Controls](#buttons-and-controls)
-   - [Tree Views](#tree-views)
-5. [Using ModelExporter UI](#using-modelexporter-ui)
+4. [Using ModelExporter UI](#using-modelexporter-ui)
    - [Loading a Mesh](#loading-a-mesh)
    - [Loading Animations](#loading-animations)
    - [Editing Mesh Textures](#editing-mesh-textures)
@@ -26,9 +22,8 @@ This user guide will walk you through the installation process, provide an overv
    - [Removing the First Frame from All Animations](#removing-the-first-frame-from-all-animations)
    - [Setting Paths](#setting-paths)
    - [Saving the Exported Model](#saving-the-exported-model)
-6. [Troubleshooting and Notes](#troubleshooting-and-notes)
-7. [Conclusion](#conclusion)
-8. [C++ DLL Notes](#dll-Notes)
+
+5. [C++ DLL Notes](#dll-Notes)
 
 ---
 
@@ -74,36 +69,8 @@ Ensure that the DLL files (`assimp-vc143-mt.dll` and `ModelExporter.dll`) are lo
 Run the Python script using the command prompt or an IDE:
 
 ```bash
-python model_exporter_ui.py
+python model_exporter.py
 ```
-
-Replace `model_exporter_ui.py` with the actual filename of the script.
-
----
-
-## User Interface Overview
-
-### Main Window
-
-Upon launching, the main window titled **"ModelExporter UI"** will appear. The window is divided into several sections:
-
-- **Buttons at the Top**: For loading meshes and animations.
-- **Tree Views**: Display loaded meshes and animations.
-- **Control Buttons**: For saving, setting paths, and modifying meshes/animations.
-
-### Buttons and Controls
-
-- **Load Mesh**: Opens a dialog to select and load a 3D mesh file.
-- **Load Animations**: Opens a dialog to select and load animation files.
-- **Save**: Saves the current project to a `.gem` file.
-- **Set Paths**: Opens a dialog to set custom paths for saving models and textures.
-- **Remove Mesh**: Removes the selected mesh from the project.
-- **Remove First Frame**: Removes the first frame from all loaded animations.
-
-### Tree Views
-
-- **Mesh Tree View**: Displays loaded meshes and their associated textures.
-- **Animation Tree View**: Displays loaded animations.
 
 ---
 
