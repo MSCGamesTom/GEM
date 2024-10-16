@@ -205,8 +205,8 @@ namespace GEMLoader
 		GEMMaterialProperty loadProperty(std::ifstream& file)
 		{
 			GEMMaterialProperty prop;
-			prop.name = loadS(file);
-			prop.value = loadS(file);
+			prop.name = loadString(file);
+			prop.value = loadString(file);
 			return prop;
 		}
 		void loadMesh(std::ifstream& file, GEMMesh& mesh, int isAnimated)
@@ -251,7 +251,7 @@ namespace GEMLoader
 				}
 			}
 		}
-		static std::string loadS(std::ifstream& file)
+		std::string loadString(std::ifstream& file)
 		{
 			int l = 0;
 			file.read(reinterpret_cast<char*>(&l), sizeof(int));
@@ -263,19 +263,19 @@ namespace GEMLoader
 			delete[] buffer;
 			return str;
 		}
-		GEMVec3 loadV(std::ifstream& file)
+		GEMVec3 loadVec3(std::ifstream& file)
 		{
 			GEMVec3 v;
 			file.read(reinterpret_cast<char*>(&v), sizeof(GEMVec3));
 			return v;
 		}
-		GEMMatrix loadM(std::ifstream& file)
+		GEMMatrix loadMatrix(std::ifstream& file)
 		{
 			GEMMatrix mat;
 			file.read(reinterpret_cast<char*>(&mat.m), sizeof(float) * 16);
 			return mat;
 		}
-		GEMQuaternion loadQ(std::ifstream& file)
+		GEMQuaternion loadQuaternion(std::ifstream& file)
 		{
 			GEMQuaternion q;
 			file.read(reinterpret_cast<char*>(&q.q), sizeof(float) * 4);
@@ -286,17 +286,17 @@ namespace GEMLoader
 			GEMAnimationFrame frame;
 			for (int i = 0; i < bonesN; i++)
 			{
-				GEMVec3 p = loadV(file);
+				GEMVec3 p = loadVec3(file);
 				frame.positions.push_back(p);
 			}
 			for (int i = 0; i < bonesN; i++)
 			{
-				GEMQuaternion q = loadQ(file);
+				GEMQuaternion q = loadQuaternion(file);
 				frame.rotations.push_back(q);
 			}
 			for (int i = 0; i < bonesN; i++)
 			{
-				GEMVec3 s = loadV(file);
+				GEMVec3 s = loadVec3(file);
 				frame.scales.push_back(s);
 			}
 			aseq.frames.push_back(frame);
@@ -372,18 +372,18 @@ namespace GEMLoader
 			for (unsigned int i = 0; i < bonesN; i++)
 			{
 				GEMBone bone;
-				bone.name = loadS(file);
-				bone.offset = loadM(file);
+				bone.name = loadString(file);
+				bone.offset = loadMatrix(file);
 				file.read(reinterpret_cast<char*>(&bone.parentIndex), sizeof(int));
 				animation.bones.push_back(bone);
 			}
-			animation.globalInverse = loadM(file);
+			animation.globalInverse = loadMatrix(file);
 			// Read animation sequence
 			file.read(reinterpret_cast<char*>(&n), sizeof(unsigned int));
 			for (unsigned int i = 0; i < n; i++)
 			{
 				GEMAnimationSequence aseq;
-				aseq.name = loadS(file);
+				aseq.name = loadString(file);
 				int frames = 0;
 				file.read(reinterpret_cast<char*>(&frames), sizeof(int));
 				file.read(reinterpret_cast<char*>(&aseq.ticksPerSecond), sizeof(float));

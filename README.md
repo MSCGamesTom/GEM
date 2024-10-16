@@ -186,17 +186,6 @@ Class responsible for loading GEM Model Files.
 - `void load(std::string filename, std::vector<GEMMesh>& meshes)`: Loads meshes as a static model. Note animated geometry will be loaded, but the associated animation will not be loaded.
 - `void load(std::string filename, std::vector<GEMMesh>& meshes, GEMAnimation& animation)`: Loads meshes and animation data from an animated model file.
 
-**Private Methods:**
-
-- `GEMMaterialProperty loadProperty(std::ifstream& file)`: Reads a material property from the file.
-- `void loadMesh(std::ifstream& file, GEMMesh& mesh, int isAnimated)`: Loads a mesh (static or animated) from the file.
-- `static std::string loadS(std::ifstream& file)`: Reads a string from the file.
-- `GEMVec3 loadV(std::ifstream& file)`: Reads a `GEMVec3` from the file.
-- `GEMMatrix loadM(std::ifstream& file)`: Reads a `GEMMatrix` from the file.
-- `GEMQuaternion loadQ(std::ifstream& file)`: Reads a `GEMQuaternion` from the file.
-- `void loadFrame(GEMAnimationSequence& aseq, std::ifstream& file, int bonesN)`: Loads a single animation frame.
-- `void loadFrames(GEMAnimationSequence& aseq, std::ifstream& file, int bonesN, int frames)`: Loads multiple animation frames.
-
 ## Usage Examples
 
 ### Loading a Static Model
