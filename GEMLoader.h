@@ -29,17 +29,18 @@ SOFTWARE.
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <map>
 
 namespace GEMLoader
 {
 
-	class GEMMaterialProperty
+	class GEMProperty
 	{
 	public:
 		std::string name;
 		std::string value;
-		GEMMaterialProperty() = default;
-		GEMMaterialProperty(std::string initialName)
+		GEMProperty() = default;
+		GEMProperty(std::string initialName)
 		{
 			name = initialName;
 		}
@@ -87,7 +88,7 @@ namespace GEMLoader
 				float v;
 				try
 				{
-					v = std::stof(value);
+					v = std::stof(word);
 				}
 				catch (...)
 				{
@@ -96,13 +97,25 @@ namespace GEMLoader
 				values.push_back(v);
 			}
 		}
+		void getValuesAsVector3(float &x, float &y, float &z, char seperator = ' ', float _default = 0)
+		{
+			std::vector<float> values;
+			getValuesAsArray(values, seperator, _default);
+			for (int i = values.size(); i < 3; i++)
+			{
+				values.push_back(_default);
+			}
+			x = values[0];
+			y = values[1];
+			z = values[2];
+		}
 	};
 
 	class GEMMaterial
 	{
 	public:
-		std::vector<GEMMaterialProperty> properties;
-		GEMMaterialProperty find(std::string name)
+		std::vector<GEMProperty> properties;
+		GEMProperty find(std::string name)
 		{
 			for (int i = 0; i < properties.size(); i++)
 			{
@@ -111,7 +124,7 @@ namespace GEMLoader
 					return properties[i];
 				}
 			}
-			return GEMMaterialProperty(name);
+			return GEMProperty(name);
 		}
 	};
 
@@ -202,9 +215,9 @@ namespace GEMLoader
 	class GEMModelLoader
 	{
 	private:
-		GEMMaterialProperty loadProperty(std::ifstream& file)
+		GEMProperty loadProperty(std::ifstream& file)
 		{
-			GEMMaterialProperty prop;
+			GEMProperty prop;
 			prop.name = loadString(file);
 			prop.value = loadString(file);
 			return prop;
@@ -391,6 +404,345 @@ namespace GEMLoader
 				animation.animations.push_back(aseq);
 			}
 			file.close();
+		}
+	};
+
+	#define GEM_JSON_NULL 0
+	#define GEM_JSON_BOOLEAN 1
+	#define GEM_JSON_NUMBER 2
+	#define GEM_JSON_STRING 3
+	#define GEM_JSON_ARRAY 4
+	#define GEM_JSON_DICT 5
+
+	class GEMJson
+	{
+	public:
+		int type;
+		bool vBool;
+		float vFloat;
+		std::string vStr;
+		std::vector<GEMJson> vArr;
+		std::map<std::string, GEMJson> vDict;
+
+		GEMJson()
+		{
+			type = GEM_JSON_NULL;
+		}
+		GEMJson(bool v)
+		{
+			type = GEM_JSON_BOOLEAN;
+			vBool = v;
+		}
+		GEMJson(float v)
+		{
+			type = GEM_JSON_NUMBER;
+			vFloat = v;
+		}
+		GEMJson(const std::string v)
+		{
+			type = GEM_JSON_STRING;
+			vStr = v;
+		}
+		GEMJson(const std::vector<GEMJson>& v)
+		{
+			type = GEM_JSON_ARRAY;
+			vArr = v;
+		}
+		GEMJson(const std::map<std::string, GEMJson>& v)
+		{
+			type = GEM_JSON_DICT;
+			vDict = v;
+		}
+		std::string asStr() const
+		{
+			switch (type)
+			{
+			case GEM_JSON_BOOLEAN:
+			{
+				return std::to_string(vBool);
+			}
+			case GEM_JSON_NUMBER:
+			{
+				return std::to_string(vFloat);
+			}
+			case GEM_JSON_STRING:
+			{
+				return vStr;
+			}
+			default:
+			{
+				return "";
+			}
+			}
+		}
+	};
+
+	class GEMJsonParser
+	{
+	public:
+		std::string s;
+		unsigned int pos;
+		GEMJson parse(const std::string& str)
+		{
+			s = str;
+			pos = 0;
+			skipWhitespace();
+			GEMJson value = parseValue();
+			skipWhitespace();
+			return value;
+		}
+
+	private:
+		void skipWhitespace()
+		{
+			while (pos < s.size() && std::isspace(s[pos]))
+			{
+				pos++;
+			}
+		}
+		char peek() const
+		{
+			return (pos < s.size() ? s[pos] : 0);
+		}
+		char get()
+		{
+			pos++;
+			return s[pos - 1];
+		}
+		GEMJson parseValue()
+		{
+			skipWhitespace();
+			char c = peek();
+			if (c == 'n')
+			{
+				return parseNull();
+			}
+			if (c == 't' || c == 'f')
+			{
+				return parseBool();
+			}
+			if (c == '-' || std::isdigit(c))
+			{
+				return parseNum();
+			}
+			if (c == '"')
+			{
+				return parseStr();
+			}
+			if (c == '[')
+			{
+				return parseArr();
+			}
+			if (c == '{')
+			{
+				return parseDict();
+			}
+			return GEMJson();
+		}
+		GEMJson parseNull()
+		{
+			pos += 4;
+			return GEMJson();
+		}
+		GEMJson parseBool()
+		{
+			if (s[pos] == 't')
+			{
+				pos += 4;
+				return GEMJson(true);
+			} else
+			{
+				pos += 5;
+				return GEMJson(false);
+			}
+		}
+		GEMJson parseNum()
+		{
+			size_t start = pos;
+			if (peek() == '-')
+			{
+				get();
+			}
+			if (peek() == '0')
+			{
+				get();
+			} else
+			{
+				while (std::isdigit(peek()) != 0)
+				{
+					get();
+				}
+			}
+			if (peek() == '.')
+			{
+				get();
+				while (std::isdigit(peek()) != 0)
+				{
+					get();
+				}
+			}
+			if (peek() == 'e' || peek() == 'E')
+			{
+				get();
+				if (peek() == '+' || peek() == '-')
+				{
+					get();
+				}
+				while (std::isdigit(peek()) != 0)
+				{
+					get();
+				}
+			}
+			float v = std::stof(s.substr(start, pos - start));
+			return GEMJson(v);
+		}
+		GEMJson parseStr()
+		{
+			get();
+			std::string result;
+			while (true)
+			{
+				char c = get();
+				if (c == '"')
+				{
+					break;
+				}
+				result.push_back(c); // There shouldn't be any escape characters
+			}
+			return GEMJson(result);
+		}
+		GEMJson parseArr()
+		{
+			get();
+			skipWhitespace();
+			std::vector<GEMJson> elements;
+			if (peek() == ']')
+			{
+				get();
+				return GEMJson(elements);
+			}
+			while (1)
+			{
+				elements.push_back(parseValue());
+				skipWhitespace();
+				char c = get();
+				if (c == ']')
+				{
+					break;
+				}
+				skipWhitespace();
+			}
+			return GEMJson(elements);
+		}
+		GEMJson parseDict()
+		{
+			get();
+			skipWhitespace();
+			std::map<std::string, GEMJson> obj;
+			if (peek() == '}')
+			{
+				get();
+				return GEMJson(obj);
+			}
+			while (true)
+			{
+				skipWhitespace();
+				std::string key = parseStr().vStr;
+				skipWhitespace();
+				get();
+				skipWhitespace();
+				GEMJson value = parseValue();
+				obj[key] = value;
+				skipWhitespace();
+				char c = get();
+				if (c == '}')
+				{
+					break;
+				}
+				skipWhitespace();
+			}
+			return GEMJson(obj);
+		}
+	};
+
+	class GEMInstance
+	{
+	public:
+		GEMMatrix w;
+		std::string meshFilename;
+		GEMMaterial material;
+	};
+
+	class GEMScene
+	{
+	public:
+		std::vector<GEMInstance> instances;
+		std::vector<GEMProperty> sceneProperties;
+	public:
+		void parseInstance(const GEMJson& inst)
+		{
+			GEMInstance instance;
+			for (const auto& item : inst.vDict)
+			{
+				int isCore = 0;
+				if (item.first == "filename")
+				{
+					instance.meshFilename = item.second.asStr();
+					isCore = 1;
+				}
+				if (item.first == "world")
+				{
+					for (int i = 0; i < 16; i++)
+					{
+						instance.w.m[i] = item.second.vArr[i].vFloat;
+					}
+					isCore = 1;
+				}
+				if (isCore == 0)
+				{
+					GEMProperty property;
+					property.name = item.first;
+					property.value = item.second.asStr();
+					instance.material.properties.push_back(property);
+				}
+			}
+			instances.push_back(instance);
+		}
+		void load(std::string filename)
+		{
+			std::ifstream file(filename);
+			std::stringstream buffer;
+			buffer << file.rdbuf();
+			std::string content = buffer.str();
+			GEMJsonParser parser;
+			GEMJson data = parser.parse(content);
+			for (const auto& item : data.vDict)
+			{
+				if (item.second.type != GEM_JSON_ARRAY)
+				{
+					GEMProperty property;
+					property.name = item.first;
+					property.value = item.second.asStr();
+					sceneProperties.push_back(property);
+				} else
+				{
+					for (const auto& inst : item.second.vArr)
+					{
+						parseInstance(inst);
+					}
+				}
+			}
+		}
+		GEMProperty findProperty(std::string name)
+		{
+			for (const auto& item : sceneProperties)
+			{
+				if (item.name == name)
+				{
+					return item;
+				}
+			}
+			return GEMProperty(name);
 		}
 	};
 
